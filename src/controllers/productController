@@ -1,6 +1,0 @@
-import { Request, Response, NextFunction } from "express" 
-import Product from "../models/product"; 
-
-const productController = {};
-
-export default productController;

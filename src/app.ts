@@ -1,5 +1,8 @@
 import express, { Request, Response, NextFunction } from 'express';
 import productRouter from './routes/productRoute';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 app.set("port", process.env.PORT || 3003);
