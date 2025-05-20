@@ -1,14 +1,18 @@
 import client from '../db';
 
-let products: Product[] = [];
-
 export default class Product {
-    constructor(public id: number, public name: string, public price: number) {
+    constructor(
+        public id: number,
+        public name: string,
+        public description: string,
+        public category: string,
+        public price: number,
+        public dateAdded: string,
+        public averageRating: number
+    ) {}
 
-    }
-
-     static getAllProducts = async (page: number = 1, category?: string) => {
-        const limit = 10; 
+    static getAllProducts = async (page: number = 1, category?: string): Promise<Product[]> => {
+        const limit = 10;
         const offset = (page - 1) * limit;
 
         let query = 'SELECT * FROM products ORDER BY dateAdded DESC LIMIT $1 OFFSET $2';
@@ -21,13 +25,26 @@ export default class Product {
 
         try {
             const result = await client.query(query, queryParams);
-            return result.rows;
+            return result.rows.map((row: any) => new Product(row.id, row.name, row.description, row.category, row.price, row.dateAdded, row.averageRating));
         } catch (error: unknown) {
             if (error instanceof Error) {
-                throw new Error('Error fetching products: ' + error.message);
-            } else {
-                throw new Error('An unknown error occurred.');
+                throw new Error(`Error fetching products: ${error.message}`);
             }
+            throw new Error('An unknown error occurred while fetching products.');
         }
     };
-} 
+
+
+    static searchProducts = async (searchQuery: string): Promise<Product[]> => {
+        const query = 'SELECT * FROM products WHERE name ILIKE $1 ORDER BY dateAdded DESC';
+        try {
+            const result = await client.query(query, [`%${searchQuery}%`]);
+            return result.rows.map((row: any) => new Product(row.id, row.name, row.description, row.category, row.price, row.dateAdded, row.averageRating));
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                throw new Error(`Error searching products: ${error.message}`);
+            }
+            throw new Error('An unknown error occurred while searching for products.');
+        }
+    };
+}
