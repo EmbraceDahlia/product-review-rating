@@ -1,0 +1,27 @@
+{
+  "name": "product-review-rating",
+  "version": "1.0.0",
+  "description": "RESTful API for managing product reviews and ratings",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EmbraceDahlia/product-review-rating.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/EmbraceDahlia/product-review-rating/issues"
+  },
+  "homepage": "https://github.com/EmbraceDahlia/product-review-rating#readme",
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.2",
+    "typescript": "^5.8.3"
+  }
+}

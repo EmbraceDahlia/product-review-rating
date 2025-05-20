@@ -1,0 +1,22 @@
+node_modules/
+
+/dist
+/build
+
+*.log
+
+.env
+
+*.tsbuildinfo
+
+.vscode/
+.idea/
+
+.DS_Store  # macOS
+Thumbs.db  # Windows
+
+package-lock.json
+
+.prisma/
+
+coverage/
