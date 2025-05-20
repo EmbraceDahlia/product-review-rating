@@ -1,0 +1,91 @@
+import client from '../db';
+
+export default class Review {
+    constructor(
+        public id: number,
+        public productId: number,
+        public author: string,
+        public rating: number,
+        public comment: string,
+        public date: string
+    ) {}
+
+    static getReviewsByProductId = async (productId: number): Promise<Review[]> => {
+        try {
+            const result = await client.query(
+                'SELECT * FROM reviews WHERE productId = $1 ORDER BY date DESC',
+                [productId]
+            );
+
+            return result.rows.map((row: any) =>
+                new Review(row.id, row.productid, row.author, row.rating, row.comment, row.date)
+            );
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                throw new Error(`Error fetching reviews: ${error.message}`);
+            }
+            throw new Error('An unknown error occurred while fetching reviews.');
+        }
+    };
+
+    static addReview = async (productId: number, author: string, rating: number, comment: string): Promise<Review> => {
+        try {
+            const result = await client.query(
+                `INSERT INTO reviews (productId, author, rating, comment)
+                 VALUES ($1, $2, $3, $4) RETURNING *`,
+                [productId, author, rating, comment]
+            );
+
+            const row = result.rows[0];
+            return new Review(row.id, row.productid, row.author, row.rating, row.comment, row.date);
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                throw new Error(`Error adding review: ${error.message}`);
+            }
+            throw new Error('An unknown error occurred while adding a review.');
+        }
+    };
+
+    static updateReview = async (
+        reviewId: number,
+        productId: number,
+        author: string,
+        rating: number,
+        comment: string
+    ): Promise<Review | null> => {
+        try {
+            const result = await client.query(
+                `UPDATE reviews
+                 SET author = $1, rating = $2, comment = $3, date = NOW()
+                 WHERE id = $4 AND productId = $5
+                 RETURNING *`,
+                [author, rating, comment, reviewId, productId]
+            );
+
+            if (result.rowCount === 0) return null;
+
+            const row = result.rows[0];
+            return new Review(row.id, row.productid, row.author, row.rating, row.comment, row.date);
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                throw new Error(`Error updating review: ${error.message}`);
+            }
+            throw new Error('An unknown error occurred while updating a review.');
+        }
+    };
+
+    static deleteReview = async (reviewId: number, productId: number): Promise<boolean> => {
+        try {
+            const result = await client.query(
+                'DELETE FROM reviews WHERE id = $1 AND productId = $2 RETURNING *',
+                [reviewId, productId]
+            );
+            return !!result?.rowCount && result.rowCount > 0;
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                throw new Error(`Error deleting review: ${error.message}`);
+            }
+            throw new Error('An unknown error occurred while deleting a review.');
+        }
+    };
+}
