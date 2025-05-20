@@ -12,8 +12,8 @@ app.use(express.json());
 
 app.use('/products', productRouter);
 
-app.use((req: Request, res: Response, next: NextFunction) => {
-    res.status(200).json({ success: true })
+app.use((req: Request, res: Response) => {
+    res.status(404).json({ message: 'API Not Found' });
 });
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
