@@ -8,7 +8,7 @@ export default class Review {
         public rating: number,
         public comment: string,
         public date: string
-    ) {}
+    ) { }
 
     static getReviewsByProductId = async (productId: number): Promise<Review[]> => {
         try {
@@ -35,7 +35,7 @@ export default class Review {
                  VALUES ($1, $2, $3, $4) RETURNING *`,
                 [productId, author, rating, comment]
             );
-
+            await this.updateAverageRating(productId);
             const row = result.rows[0];
             return new Review(row.id, row.productid, row.author, row.rating, row.comment, row.date);
         } catch (error: unknown) {
@@ -63,7 +63,7 @@ export default class Review {
             );
 
             if (result.rowCount === 0) return null;
-
+            await this.updateAverageRating(productId);
             const row = result.rows[0];
             return new Review(row.id, row.productid, row.author, row.rating, row.comment, row.date);
         } catch (error: unknown) {
@@ -80,7 +80,11 @@ export default class Review {
                 'DELETE FROM reviews WHERE id = $1 AND productId = $2 RETURNING *',
                 [reviewId, productId]
             );
-            return !!result?.rowCount && result.rowCount > 0;
+            const success = !!result?.rowCount && result.rowCount > 0;
+            if (success) {
+                await this.updateAverageRating(productId); 
+            }
+            return success;
         } catch (error: unknown) {
             if (error instanceof Error) {
                 throw new Error(`Error deleting review: ${error.message}`);
@@ -88,4 +92,23 @@ export default class Review {
             throw new Error('An unknown error occurred while deleting a review.');
         }
     };
+
+    private static updateAverageRating = async (productId: number): Promise<void> => {
+        try {
+            const result = await client.query(
+                `SELECT AVG(rating) AS avg_rating FROM reviews WHERE productId = $1`,
+                [productId]
+            );
+
+            const average = parseFloat(result.rows[0].avg_rating) || 0;
+
+            await client.query(
+                `UPDATE products SET averageRating = $1 WHERE id = $2`,
+                [average.toFixed(2), productId]
+            );
+        } catch (error: unknown) {
+            console.error('Failed to update average rating:', error);
+        }
+    };
+
 }

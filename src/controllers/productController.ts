@@ -28,6 +28,15 @@ const productController = {
         } catch (error) {
             next(error);
         }
+    },
+    getProductById: async (req: Request, res: Response, next: NextFunction) => {
+        const productId = parseInt(req.params.id);
+        try {
+            const reviews = await Product.getProductById(productId);
+            res.status(200).json(reviews);
+        } catch (error) {
+            next(error);
+        }
     }
 };
 

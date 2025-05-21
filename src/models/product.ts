@@ -9,7 +9,7 @@ export default class Product {
         public price: number,
         public dateAdded: string,
         public averageRating: number
-    ) {}
+    ) { }
 
     static getAllProducts = async (page: number = 1, category?: string): Promise<Product[]> => {
         const limit = 10;
@@ -47,4 +47,29 @@ export default class Product {
             throw new Error('An unknown error occurred while searching for products.');
         }
     };
+
+    static getProductById = async (productId: number): Promise<Product | null> => {
+        try {
+            const result = await client.query(
+                'SELECT * FROM products WHERE id = $1',
+                [productId]
+            );
+
+            if (result.rows.length === 0) {
+                return null;
+            }
+
+            const row = result.rows[0];
+            return new Product(
+                row.id, row.name, row.description, row.category,
+                row.price, row.dateadded, row.averagerating
+            );
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                throw new Error(`Error fetching the product: ${error.message}`);
+            }
+            throw new Error('An unknown error occurred while fetching the product.');
+        }
+    };
+
 }
