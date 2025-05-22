@@ -4,6 +4,8 @@
   "description": "RESTful API for managing product reviews and ratings",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
+    "start": "node dist/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
