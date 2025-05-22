@@ -15,11 +15,11 @@ export default class Product {
     static getAllProducts = async (page: number, limit: number, category?: string): Promise<{ products: Product[], totalCount: number }> => {
         const offset = (page - 1) * limit;
 
-        let query = 'SELECT * FROM products ORDER BY dateadded DESC LIMIT $1 OFFSET $2';
+        let query = 'SELECT * FROM products ORDER BY dateadded,id DESC LIMIT $1 OFFSET $2';
         const queryParams: (string | number)[] = [limit, offset];
 
         if (category) {
-            query = 'SELECT * FROM products WHERE category = $1 ORDER BY dateadded DESC LIMIT $2 OFFSET $3';
+            query = 'SELECT * FROM products WHERE category = $1 ORDER BY dateadded,id DESC LIMIT $2 OFFSET $3';
             queryParams.unshift(category);
         }
 
@@ -47,14 +47,29 @@ export default class Product {
         }
     };
 
-    static searchProducts = async (searchQuery: string, page: number, limit: number): Promise<{ products: Product[], totalCount: number }> => {
+    static searchProducts = async (
+        searchQuery: string,
+        page: number,
+        limit: number,
+        category?: string
+    ): Promise<{ products: Product[], totalCount: number }> => {
         const offset = (page - 1) * limit;
-        
-        const query = 'SELECT * FROM products WHERE name ILIKE $1 ORDER BY dateadded DESC LIMIT $2 OFFSET $3';
-        const queryParams = [`%${searchQuery}%`, limit, offset];
-        
-        const countQuery = 'SELECT COUNT(*) FROM products WHERE name ILIKE $1';
-        const countQueryParams = [`%${searchQuery}%`];
+
+        let query = 'SELECT * FROM products WHERE name ILIKE $1 ORDER BY dateadded,id DESC LIMIT $2 OFFSET $3';
+        let queryParams: (string | number)[] = [`%${searchQuery}%`, limit, offset];
+
+        if (category) {
+            query = 'SELECT * FROM products WHERE name ILIKE $1 AND category = $2 ORDER BY dateadded,id DESC LIMIT $3 OFFSET $4';
+            queryParams = [`%${searchQuery}%`, category, limit, offset];
+        }
+
+        let countQuery = 'SELECT COUNT(*) FROM products WHERE name ILIKE $1';
+        let countQueryParams: (string | number)[] = [`%${searchQuery}%`];
+
+        if (category) {
+            countQuery = 'SELECT COUNT(*) FROM products WHERE name ILIKE $1 AND category = $2';
+            countQueryParams = [`%${searchQuery}%`, category];
+        }
 
         try {
             const result = await client.query(query, queryParams);
@@ -68,7 +83,7 @@ export default class Product {
                 row.averagerating,
                 row.imagepath
             ));
-            
+
             const countResult = await client.query(countQuery, countQueryParams);
             const totalCount = parseInt(countResult.rows[0].count, 10);
 
@@ -80,6 +95,7 @@ export default class Product {
             throw new Error('An unknown error occurred while searching for products.');
         }
     };
+
 
 
     static getProductById = async (productId: number): Promise<Product | null> => {

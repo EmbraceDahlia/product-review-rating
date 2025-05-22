@@ -19,11 +19,12 @@ const productController = {
         const searchQuery = req.query.q as string;
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 10;
+        const category = req.query.category as string;
         if (!searchQuery) {
             res.status(400).json({ error: 'Search query is required' });
         }
         try {
-            const products = await Product.searchProducts(searchQuery,page,limit);
+            const products = await Product.searchProducts(searchQuery,page,limit,category);
             if (!products) {
                 res.status(404).json({ message: 'No products found' });
             }

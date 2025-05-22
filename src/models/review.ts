@@ -56,7 +56,7 @@ export default class Review {
         try {
             const result = await client.query(
                 `UPDATE reviews
-                 SET author = $1, rating = $2, comment = $3, date = NOW()
+                 SET author = $1, rating = $2, comment = $3
                  WHERE id = $4 AND productId = $5
                  RETURNING *`,
                 [author, rating, comment, reviewId, productId]
